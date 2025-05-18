@@ -13,7 +13,7 @@ function App() {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    socketRef.current = new WebSocket('ws://localhost:5000');
+    socketRef.current = new WebSocket('https://mini-code-editor-backend.vercel.app');
 
     socketRef.current.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
