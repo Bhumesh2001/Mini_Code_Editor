@@ -13,7 +13,7 @@ function App() {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    socketRef.current = new WebSocket('wss//mini-code-editor-backend.vercel.app');
+    socketRef.current = new WebSocket('ws//mini-code-editor-backend.vercel.app');
 
     socketRef.current.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
@@ -40,7 +40,7 @@ function App() {
     setInputMode(true);
     socketRef.current.send(JSON.stringify({ language, code }));
   };
-  
+
   const sendInput = () => {
     if (inputValue.trim()) {
       setOutputLines((prev) => [...prev, `> ${inputValue}`]); // show input as terminal
