@@ -13,7 +13,8 @@ function App() {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    socketRef.current = new WebSocket('wss//mini-code-editor-backend.onrender.com');
+    // ✅ Corrected WebSocket URL
+    socketRef.current = new WebSocket('wss://mini-code-editor-backend.onrender.com');
 
     socketRef.current.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
@@ -26,7 +27,13 @@ function App() {
       }
     };
 
-    return () => socketRef.current.close();
+    socketRef.current.onerror = (err) => {
+      console.error('WebSocket error:', err);
+    };
+
+    return () => {
+      socketRef.current?.close();
+    };
   }, []);
 
   useEffect(() => {
@@ -38,13 +45,23 @@ function App() {
   const runCode = () => {
     setOutputLines([]); // clear previous output
     setInputMode(true);
-    socketRef.current.send(JSON.stringify({ language, code }));
+
+    // ✅ Prevent sending on closed socket
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({ language, code }));
+    } else {
+      setOutputLines(['[Error] WebSocket is not open.']);
+    }
   };
 
   const sendInput = () => {
     if (inputValue.trim()) {
-      setOutputLines((prev) => [...prev, `> ${inputValue}`]); // show input as terminal
-      socketRef.current.send(JSON.stringify({ input: inputValue }));
+      setOutputLines((prev) => [...prev, `> ${inputValue}`]);
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.send(JSON.stringify({ input: inputValue }));
+      } else {
+        setOutputLines((prev) => [...prev, '[Error] WebSocket is not open.']);
+      }
       setInputValue('');
     }
   };
@@ -107,6 +124,6 @@ function App() {
       </Card>
     </Container>
   );
-};
+}
 
 export default App;
